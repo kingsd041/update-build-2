@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/60 * * * *'
 
 defaults:
   run:
@@ -13,7 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Run a multi-line script
+      - name: Run script
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+          TZ: 'Asia/Shanghai'
         run: |
           bash docs2_update_file.sh
           bash website_update_file.sh
