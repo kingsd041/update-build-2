@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '*/60 * * * *'
+    - cron: '*/180 * * * *'
 
 defaults:
   run:
