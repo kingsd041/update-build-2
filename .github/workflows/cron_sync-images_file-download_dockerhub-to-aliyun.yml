@@ -1,4 +1,4 @@
-name: sync-github-gitee
+name: cron_sync-images_file-download_dockerhub-to-aliyun
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '0 */1 * * *'
+    - cron: '0 */2 * * *'
 
 defaults:
   run:
@@ -22,6 +22,8 @@ jobs:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
           GITEE_ACC: ${{ secrets.GITEE_ACC }}
           GITEE_PW: ${{ secrets.GITEE_PW }}
+          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
+          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
           TZ: 'Asia/Shanghai'
         run: |
-          bash sync-github-gitee.sh
+          bash cron_sync-images_file-download_dockerhub-to-aliyun.sh

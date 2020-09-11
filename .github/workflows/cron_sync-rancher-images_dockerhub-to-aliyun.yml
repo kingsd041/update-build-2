@@ -1,4 +1,4 @@
-name: sync-images-aliyun
+name: cron_sync-rancher-images_dockerhub-to-aliyun
 
 on:
   push:
@@ -26,4 +26,4 @@ jobs:
           ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
           TZ: 'Asia/Shanghai'
         run: |
-          bash sync-images-aliyun.sh
+          bash cron_sync-rancher-images_dockerhub-to-aliyun.sh
