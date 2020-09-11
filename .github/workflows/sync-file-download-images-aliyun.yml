@@ -1,0 +1,29 @@
+name: sync-file-download-images-aliyun
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 */2 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run script
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+          GITEE_ACC: ${{ secrets.GITEE_ACC }}
+          GITEE_PW: ${{ secrets.GITEE_PW }}
+          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
+          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
+          TZ: 'Asia/Shanghai'
+        run: |
+          bash sync-file-download-images-aliyun.sh

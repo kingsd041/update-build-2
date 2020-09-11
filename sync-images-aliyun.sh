@@ -1,18 +1,10 @@
 #!/bin/bash
 
 export ROOT_DIR="${PWD}"
-
-touch rancher-images-all.txt update.txt
-echo "$(date +%Y-%m-%d:%H)" >> update.txt
-
-#docker pull hongxiaolu/website:file-download
-#docker tag hongxiaolu/website:file-download registry.cn-shenzhen.aliyuncs.com/rancher/website:file-download
-#docker push registry.cn-shenzhen.aliyuncs.com/rancher/website:file-download
-
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
-
 export registry=registry.cn-hangzhou.aliyuncs.com
+
 docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 
 export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
