@@ -1,5 +1,7 @@
 #!/bin/bash
 
+apt-get install jq -y
+
 export GITHUB_API_TOKEN=${CI_TOKEN}
 export GITHUB_API_URL=https://api.github.com
 export REPO_NAME=xiaoluhong/k3s-sync

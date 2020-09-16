@@ -1,5 +1,7 @@
 #!/bin/bash
 
+apt-get install jq -y
+
 workdir=`pwd`
 log_file=${workdir}/sync_images_$(date +"%Y-%m-%d").log
 images_list="tiller,pause,kubernetes-dashboard,k8s-dns-sidecar"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+apt-get install jq -y
+
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
@@ -41,8 +43,9 @@ export rke_version=$( curl -u $token -s https://api.github.com/repos/rancher/rke
 
 for ver in $( echo "${rke_version}" );
 do
-        curl -LSs https://docs.rancher.cn/download/rke/v${ver}-rke_linux-amd64 -o ./rke${ver}
+        curl -LSs https://github.com/rancher/rke/releases/download/v${ver}/rke_linux-amd64 -o ./rke${ver}
         chmod +x ./rke${ver}
+        ls -all -h
         ./rke${ver} config --system-images --all | grep -v 'time=' >> rancher-images-all.txt
 done
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+apt-get install jq -y
+
 git config --global push.default matching
 git config --global pull.ff only
 git config --local user.email "xiaoluhong@rancher.com"
