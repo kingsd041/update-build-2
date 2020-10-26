@@ -24,4 +24,4 @@ jobs:
           GITEE_PW: ${{ secrets.GITEE_PW }}
           TZ: 'Asia/Shanghai'
         run: |
-          bash cron_sync-code_github-to-gitee.sh
+          #bash cron_sync-code_github-to-gitee.sh
