@@ -21,4 +21,4 @@ script:
 
 before_install:
   - sudo apt-get install jq curl >> /dev/null
-  - chmod +x docs2_update_file.sh website_update_file.sh cron_update_repo.sh
+  - chmod +x cron_update_repo.sh
