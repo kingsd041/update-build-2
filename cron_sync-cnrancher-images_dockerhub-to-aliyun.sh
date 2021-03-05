@@ -9,35 +9,35 @@ export registry=registry.cn-hangzhou.aliyuncs.com
 
 docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 
-export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
-#export CNRANCHER_VERSION=$( curl -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
+# export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
+export CNRANCHER_VERSION=$( curl -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
 
-# rancher 镜像
-for RANCHER in $( echo "${RANCHER_VERSION}" );
+# # rancher 镜像
+# for RANCHER in $( echo "${RANCHER_VERSION}" );
+# do
+#     if [[ -f "rancher-images-v${RANCHER}.txt" ]] && [[ `cat "rancher-images-v${RANCHER}.txt" | wc -l` > 10 ]]; then
+#         echo "已存在 rancher-images-v${RANCHER}.txt"
+#         cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
+#     else
+#         curl -LSs https://github.com/rancher/rancher/releases/download/v${RANCHER}/rancher-images.txt -o rancher-images-v${RANCHER}.txt
+#         cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
+#     fi
+# done
+
+# cnrancher 镜像
+for CNRANCHER in $( echo "${CNRANCHER_VERSION}" );
 do
-    if [[ -f "rancher-images-v${RANCHER}.txt" ]] && [[ `cat "rancher-images-v${RANCHER}.txt" | wc -l` > 10 ]]; then
-        echo "已存在 rancher-images-v${RANCHER}.txt"
-        cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
+    if [[ -f "rancher-images-cn-${CNRANCHER}.txt" ]] && [[ `cat "rancher-images-cn-${CNRANCHER}.txt" | wc -l` > 10 ]]; then
+        echo "已存在 rancher-images-cn-${CNRANCHER}.txt"
+        cat rancher-images-cn-${CNRANCHER}.txt >> rancher-images-all.txt
     else
-        curl -LSs https://github.com/rancher/rancher/releases/download/v${RANCHER}/rancher-images.txt -o rancher-images-v${RANCHER}.txt
-        cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
+        asset_id=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/${CNRANCHER} | jq ".assets[] | select(.name == \"rancher-images.txt\").id" )
+        curl -J -sL -H "Authorization: token $TOKEN" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/$asset_id -o rancher-images-cn-${CNRANCHER}.txt
+
+        cat rancher-images-cn-${CNRANCHER}.txt >> rancher-images-all.txt
     fi
 done
 
-# # cnrancher 镜像
-# for CNRANCHER in $( echo "${CNRANCHER_VERSION}" );
-# do
-#     if [[ -f "rancher-images-cn-${CNRANCHER}.txt" ]] && [[ `cat "rancher-images-cn-${CNRANCHER}.txt" | wc -l` > 10 ]]; then
-#         echo "已存在 rancher-images-cn-${CNRANCHER}.txt"
-#         cat rancher-images-cn-${CNRANCHER}.txt >> rancher-images-all.txt
-#     else
-#         asset_id=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/${CNRANCHER} | jq ".assets[] | select(.name == \"rancher-images.txt\").id" )
-#         curl -J -sL -H "Authorization: token $TOKEN" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/$asset_id -o rancher-images-cn-${CNRANCHER}.txt
-# 
-#         cat rancher-images-cn-${CNRANCHER}.txt >> rancher-images-all.txt
-#     fi
-# done
-# 
 # # rke 镜像
 # export rke_version=$( curl -u $token -s https://api.github.com/repos/rancher/rke/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 )
 # 

@@ -9,21 +9,21 @@ export registry=registry.cn-hangzhou.aliyuncs.com
 
 docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 
-export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
-#export CNRANCHER_VERSION=$( curl -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
-
-# rancher 镜像
-for RANCHER in $( echo "${RANCHER_VERSION}" );
-do
-    if [[ -f "rancher-images-v${RANCHER}.txt" ]] && [[ `cat "rancher-images-v${RANCHER}.txt" | wc -l` > 10 ]]; then
-        echo "已存在 rancher-images-v${RANCHER}.txt"
-        cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
-    else
-        curl -LSs https://github.com/rancher/rancher/releases/download/v${RANCHER}/rancher-images.txt -o rancher-images-v${RANCHER}.txt
-        cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
-    fi
-done
-
+# export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
+# export CNRANCHER_VERSION=$( curl -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
+# 
+# # rancher 镜像
+# for RANCHER in $( echo "${RANCHER_VERSION}" );
+# do
+#     if [[ -f "rancher-images-v${RANCHER}.txt" ]] && [[ `cat "rancher-images-v${RANCHER}.txt" | wc -l` > 10 ]]; then
+#         echo "已存在 rancher-images-v${RANCHER}.txt"
+#         cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
+#     else
+#         curl -LSs https://github.com/rancher/rancher/releases/download/v${RANCHER}/rancher-images.txt -o rancher-images-v${RANCHER}.txt
+#         cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
+#     fi
+# done
+# 
 # # cnrancher 镜像
 # for CNRANCHER in $( echo "${CNRANCHER_VERSION}" );
 # do
@@ -48,20 +48,20 @@ done
 #         ls -all -h
 #         ./rke${ver} config --system-images --all | grep -v 'time=' >> rancher-images-all.txt
 # done
-# 
-# # k3s 镜像
-# export K3S_VERSION=$( curl -u $token -s https://api.github.com/repos/rancher/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha" | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v -E '^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16' )
-# 
-# for K3S in $( echo "${K3S_VERSION}" );
-# do
-#     if [[ -f "k3s-images-v${K3S}.txt" ]] && [[ `cat "k3s-images-v${K3S}.txt" | wc -l` > 3 ]]; then
-#         echo "已存在 k3s-images-v${K3S}.txt"
-#         cat k3s-images-v${K3S}.txt >> k3s-images-all.txt
-#     else
-#         curl -LSs https://github.com/rancher/k3s/releases/download/v${K3S}/k3s-images.txt -o k3s-images-v${K3S}.txt
-#         cat k3s-images-v${K3S}.txt >> rancher-images-all.txt
-#     fi
-# done
+
+# k3s 镜像
+export K3S_VERSION=$( curl -u $token -s https://api.github.com/repos/rancher/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha" | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v -E '^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16' )
+
+for K3S in $( echo "${K3S_VERSION}" );
+do
+    if [[ -f "k3s-images-v${K3S}.txt" ]] && [[ `cat "k3s-images-v${K3S}.txt" | wc -l` > 3 ]]; then
+        echo "已存在 k3s-images-v${K3S}.txt"
+        cat k3s-images-v${K3S}.txt >> k3s-images-all.txt
+    else
+        curl -LSs https://github.com/rancher/k3s/releases/download/v${K3S}/k3s-images.txt -o k3s-images-v${K3S}.txt
+        cat k3s-images-v${K3S}.txt >> rancher-images-all.txt
+    fi
+done
 
 # 排序去重
 sort -u rancher-images-all.txt -o rancher-images-all.txt
