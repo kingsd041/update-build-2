@@ -1,6 +1,6 @@
 language: shell
 git:
-  depth: 1
+  depth: 50
   quiet: true
   submodules: false
 os:
@@ -15,9 +15,10 @@ before_script:
   - git config --global push.default simple
 
 script:
-  - bash docs2_update_file.sh
-  - bash website_update_file.sh
+#  - bash docs2_update_file.sh
+#  - bash website_update_file.sh
+  - cron_update_repo.sh
 
 before_install:
   - sudo apt-get install jq curl >> /dev/null
-  - chmod +x docs2_update_file.sh website_update_file.sh
+  - chmod +x docs2_update_file.sh website_update_file.sh cron_update_repo.sh
