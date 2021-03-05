@@ -17,7 +17,7 @@ before_script:
 script:
 #  - bash docs2_update_file.sh
 #  - bash website_update_file.sh
-  - cron_update_repo.sh
+  - bash cron_update_repo.sh
 
 before_install:
   - sudo apt-get install jq curl >> /dev/null
