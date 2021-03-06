@@ -1,6 +1,9 @@
 #!/bin/bash
 
 apt-get install jq -y
+touch rancher-version-list.txt
+touch rancher-images-done.txt
+touch rancher-images-all.txt
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
@@ -9,8 +12,20 @@ export registry=registry.cn-hangzhou.aliyuncs.com
 
 docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 
-export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
+export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
+#export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
 #export CNRANCHER_VERSION=$( curl -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
+
+#echo "$RANCHER_VERSION" | grep ^2.0 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.1 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.2 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.3 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.4 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.5 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.6 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.7 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.8 | head -n 3 >> rancher-version-list.txt
+#echo "$RANCHER_VERSION" | grep ^2.9 | head -n 3 >> rancher-version-list.txt
 
 # rancher 镜像
 for RANCHER in $( echo "${RANCHER_VERSION}" );
@@ -65,7 +80,6 @@ done
 
 # 排序去重
 sort -u rancher-images-all.txt -o rancher-images-all.txt
-touch rancher-images-done.txt
 
 export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
 

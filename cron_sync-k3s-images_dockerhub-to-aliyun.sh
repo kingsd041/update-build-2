@@ -54,7 +54,7 @@ export K3S_VERSION=$( curl -L -u $token -s https://api.github.com/repos/rancher/
 
 for K3S in $( echo "${K3S_VERSION}" );
 do
-    if [[ -f "k3s-images-v${K3S}.txt" ]] && [[ `cat "k3s-images-v${K3S}.txt" | wc -l` > 3 ]]; then
+    if [[ -f "k3s-images-v${K3S}.txt" ]] && [[ `cat "k3s-images-v${K3S}.txt" | wc -l` > 10 ]]; then
         echo "已存在 k3s-images-v${K3S}.txt"
         cat k3s-images-v${K3S}.txt >> k3s-images-all.txt
     else
