@@ -50,7 +50,9 @@ docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 #done
 
 # rke2 镜像
-export rke2_version=$( curl -L -u $token -s https://api.github.com/repos/rancher/rke2/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'alpha|rc|beta' | sort -r )
+#export rke2_version=$( curl -L -u $token -s https://api.github.com/repos/rancher/rke2/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'alpha|rc|beta' | sort -r )
+
+export rke2_version=$( curl -L -u $token -s https://api.github.com/repos/rancher/rke2/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'alpha|rc|beta' | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | head -n 3)
 
 for ver in $( echo "${rke2_version}" );
 do
