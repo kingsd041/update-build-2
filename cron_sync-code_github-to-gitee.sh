@@ -1,6 +1,7 @@
 #!/bin/bash
 
 apt-get install jq -y
+echo 'nameserver 223.5.5.5' > /etc/resolv.conf
 
 git config --global push.default matching
 git config --global pull.ff only

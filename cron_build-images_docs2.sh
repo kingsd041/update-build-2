@@ -1,6 +1,7 @@
 #!/bin/bash
 
 apt-get install jq -y
+echo 'nameserver 223.5.5.5' > /etc/resolv.conf
 
 export GITHUB_API_TOKEN=${CI_TOKEN}
 export GITHUB_API_URL=https://api.github.com

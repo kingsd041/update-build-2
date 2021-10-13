@@ -1,6 +1,7 @@
 #!/bin/bash
 
 apt-get install jq -y
+echo 'nameserver 223.5.5.5' > /etc/resolv.conf
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}

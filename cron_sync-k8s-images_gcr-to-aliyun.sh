@@ -1,6 +1,7 @@
 #!/bin/bash
 
 apt-get install jq -y
+echo 'nameserver 223.5.5.5' > /etc/resolv.conf
 
 workdir=`pwd`
 log_file=${workdir}/sync_images_$(date +"%Y-%m-%d").log

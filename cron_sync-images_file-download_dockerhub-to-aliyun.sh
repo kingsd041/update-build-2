@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+
 export registry=registry.cn-hangzhou.aliyuncs.com
 export registry2=registry.cn-shenzhen.aliyuncs.com
 

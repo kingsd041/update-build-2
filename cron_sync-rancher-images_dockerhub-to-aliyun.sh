@@ -1,6 +1,8 @@
 #!/bin/bash
 
 apt-get install jq -y
+echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+
 touch rancher-version-list.txt
 touch rancher-images-done.txt
 touch rancher-images-all.txt
