@@ -26,4 +26,8 @@ jobs:
           ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
           TZ: 'Asia/Shanghai'
         run: |
-          bash -x cron_sync-rke2-images_dockerhub-to-aliyun.sh
+          git config --global push.default matching
+          git config --global pull.ff only
+          git config --local user.email "xiaoluhong@rancher.com"
+          git config --local user.name "xiaoluhong"
+          bash cron_sync-rke2-images_dockerhub-to-aliyun.sh

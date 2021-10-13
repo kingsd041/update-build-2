@@ -1,7 +1,9 @@
 #!/bin/bash
 
-apt-get install jq -y
-echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+sudo apt-get install jq -y
+
+sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
+cat /etc/resolv.conf
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
@@ -96,7 +98,7 @@ docker_push() {
         else
             docker pull ${imgs}
 
-            if [[ -n "$global_namespace" ]]; then
+            if [[ -n "${global_namespace}" ]]; then
 
                 n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
 

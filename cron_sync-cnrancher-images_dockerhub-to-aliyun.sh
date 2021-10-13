@@ -1,7 +1,9 @@
 #!/bin/bash
 
-apt-get install jq -y
-echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+sudo apt-get install jq -y
+
+sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
+cat /etc/resolv.conf
 
 touch cnrancher-version-list.txt
 touch cnrancher-images-done.txt
@@ -16,7 +18,7 @@ docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 
 # export CNRANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
 #export CNRANCHER_VERSION=$( curl -L -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
-export CNRANCHER_VERSION=$( curl -L -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v rc | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | head -n 3)
+export CNRANCHER_VERSION=$( curl -L -u ${token} -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v rc | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | head -n 3)
 
 #echo "$CNRANCHER_VERSION" | grep ^v2.0 | head -n 3 >> cnrancher-version-list.txt
 #echo "$CNRANCHER_VERSION" | grep ^v2.1 | head -n 3 >> cnrancher-version-list.txt
@@ -49,7 +51,7 @@ do
         cat cnrancher-images-${CNRANCHER}.txt >> cnrancher-images-all.txt
     else
         asset_id=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/v${CNRANCHER} | jq ".assets[] | select(.name == \"rancher-images.txt\").id" )
-        curl -J -sL -H "Authorization: token $TOKEN" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/$asset_id -o cnrancher-images-${CNRANCHER}.txt
+        curl -J -sL -H "Authorization: token ${TOKEN}" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/${asset_id} -o cnrancher-images-${CNRANCHER}.txt
 
         cat cnrancher-images-${CNRANCHER}.txt >> cnrancher-images-all.txt
     fi
@@ -96,11 +98,11 @@ docker_push() {
     for imgs in $( echo "${images}" ); do
 
         if cat cnrancher-images-done.txt | grep -w ${imgs} > /dev/null ; then
-            echo "镜像${imgs}已经同步"
+            echo "镜像 ${imgs} 已经同步"
         else
             docker pull ${imgs}
 
-            if [[ -n "$global_namespace" ]]; then
+            if [[ -n "${global_namespace}" ]]; then
 
                 n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
 

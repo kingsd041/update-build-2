@@ -1,7 +1,9 @@
 #!/bin/bash
 
-apt-get install jq -y
-echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+sudo apt-get install jq -y
+
+sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
+cat /etc/resolv.conf
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
@@ -83,7 +85,7 @@ docker_push() {
     for imgs in $( echo "${images}" ); do
 
         if cat rancher-images-done.txt | grep -w ${imgs} > /dev/null ; then
-            echo "镜像${imgs}已经同步"
+            echo "镜像 ${imgs} 已经同步"
         else
             docker pull ${imgs}
 

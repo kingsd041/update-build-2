@@ -1,7 +1,9 @@
 #!/bin/bash
 
-apt-get install jq -y
-echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+sudo apt-get install jq -y
+
+sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
+cat /etc/resolv.conf
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
@@ -40,7 +42,7 @@ docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 # done
 
 # rke 镜像
-export rke_version=$( curl -L -u $token -s https://api.github.com/repos/rancher/rke/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | head -n 3)
+export rke_version=$( curl -L -u ${token} -s https://api.github.com/repos/rancher/rke/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | head -n 3)
 
 for ver in $( echo "${rke_version}" );
 do
@@ -85,7 +87,7 @@ docker_push() {
         else
             docker pull ${imgs}
 
-            if [[ -n "$global_namespace" ]]; then
+            if [[ -n "${global_namespace}" ]]; then
 
                 n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
 

@@ -1,7 +1,9 @@
 #!/bin/bash
 
-apt-get install jq -y
-echo 'nameserver 223.5.5.5' > /etc/resolv.conf
+sudo apt-get install jq -y
+
+sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
+cat /etc/resolv.conf
 
 git config --global push.default matching
 git config --global pull.ff only
@@ -72,7 +74,7 @@ sync_repo_github_gitee_rancher()
                 echo '获取所有分支更新'
                 git pull origin
                 echo 'clone 出所有远端分支'
-                git branch -r --list "origin/*"  | grep -v HEAD | grep -v master | xargs -I @ git checkout -t @
+                git branch -r --list "origin/*" | grep -v HEAD | grep -v master | xargs -I @ git checkout -t @
                 echo '获取分支'
                 BRANCH_LIST=$( git branch -a | grep -v -E 'remotes|gitee|HEAD' | sed 's/*//' | sed -e 's/^[ ]*//g' | sed -e 's/[ ]*$//g' )
 
