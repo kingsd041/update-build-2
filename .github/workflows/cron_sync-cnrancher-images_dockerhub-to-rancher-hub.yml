@@ -24,6 +24,8 @@ jobs:
           GITEE_PW: ${{ secrets.GITEE_PW }}
           RANCHER_HUB_ACC: ${{ secrets.RANCHER_HUB_ACC }}
           RANCHER_HUB_PW: ${{ secrets.RANCHER_HUB_PW }}
+          DOCKER_HUB_ACC: ${{ secrets.DOCKER_HUB_ACC }}
+          DOCKER_HUB_PW: ${{ secrets.DOCKER_HUB_PW }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
