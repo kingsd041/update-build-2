@@ -98,14 +98,50 @@ cnrancher
 docker_push() {
     for imgs in $( echo "${images}" ); do
 
-        if cat cnrancher-images-done.txt | grep -w ${imgs} > /dev/null ; then
+        export n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
+
+        # 如果镜像名中没有 /，那么此镜像一定是 library 仓库的镜像；
+        if [ ${n} -eq 0 ]; then
+            export projects=library
+            export repositories=$(echo "${imgs}" | awk -F':' '{print $1}')
+            export tag=$(echo "${imgs}" | awk -F':' '{print $2}')
+            if [[ ${tag} != '' ]]; then
+                export CHECK_FIELD=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts/${tag}/tags?page=-1&page_size=-1" | jq '.[]|has("name")' )
+            else
+                export CHECK_FIELD=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts/latest/tags?page=-1&page_size=-1" | jq '.[]|has("name")' )
+            fi
+
+        # 如果镜像名中有一个 /，那么 / 左侧为项目名，右侧为镜像名和 tag
+        elif [ ${n} -eq 1 ]; then
+            export projects=$(echo "${imgs}" | awk -F"/" '{print $1}')
+            export repositories=$(echo "${imgs}" | awk -F"/" '{print $2}' | awk -F':' '{print $1}')
+            export tag=$(echo "${imgs}" | awk -F"/" '{print $2}' | awk -F':' '{print $2}')
+            if [[ ${tag} != '' ]]; then
+                export CHECK_FIELD=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts/${tag}/tags?page=-1&page_size=-1" | jq '.[]|has("name")' )
+            else
+                export CHECK_FIELD=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts/latest/tags?page=-1&page_size=-1" | jq '.[]|has("name")' )
+            fi
+        # 如果镜像名中有两个 /，
+        elif [ ${n} -eq 2 ]; then
+            export projects=$(echo "${imgs}" | awk -F"/" '{print $2}')
+            export repositories=$(echo "${imgs}" | awk -F"/" '{print $3}' | awk -F':' '{print $1}')
+            export tag=$(echo "${imgs}" | awk -F"/" '{print $3}' | awk -F':' '{print $2}')
+            if [[ ${tag} != '' ]]; then
+                export CHECK_FIELD=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts/${tag}/tags?page=-1&page_size=-1" | jq '.[]|has("name")' )
+            else
+                export CHECK_FIELD=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts/latest/tags?page=-1&page_size=-1" | jq '.[]|has("name")' )
+            fi
+        # 标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag，如不符合此标准，即为非有效镜像。
+        else
+            echo "No available images"
+        fi
+
+        if [[ ${CHECK_FIELD} == 'true' ]]; then
             echo "镜像 ${imgs} 已经同步"
         else
             docker pull ${imgs}
 
             if [[ -n "${global_namespace}" ]]; then
-
-                n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
 
                 # 如果镜像名中没有/，那么此镜像一定是library仓库的镜像；
                 if [ ${n} -eq 0 ]; then
