@@ -1,4 +1,4 @@
-name: cron_sync-cnrancher-images_dockerhub-to-rancher-hub
+name: cron_sync-rancher-cnrancher-rke-k3s-images_dockerhub-to-rancher-hub
 
 on:
   push:
@@ -32,4 +32,4 @@ jobs:
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_sync-cnrancher-images_dockerhub-to-rancher-hub.sh
+          bash cron_sync-rancher-cnrancher-rke-k3s-images_dockerhub-to-rancher-hub.sh
