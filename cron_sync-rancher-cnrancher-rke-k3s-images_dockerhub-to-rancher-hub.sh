@@ -124,6 +124,7 @@ docker_push() {
             echo "No available images"
         fi
 
+        echo " CHECK_STATUS_CODE = ${CHECK_STATUS_CODE} "
         if [[ ${CHECK_STATUS_CODE} == '0' ]]; then
             echo "镜像 ${imgs} 已经同步"
         else
