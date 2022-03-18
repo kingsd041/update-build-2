@@ -24,6 +24,8 @@ jobs:
           GITEE_PW: ${{ secrets.GITEE_PW }}
           ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
           ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
+          DOCKER_HUB_ACC: ${{ secrets.DOCKER_HUB_ACC }}
+          DOCKER_HUB_PW: ${{ secrets.DOCKER_HUB_PW }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
