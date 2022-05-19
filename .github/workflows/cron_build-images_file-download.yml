@@ -29,4 +29,4 @@ jobs:
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_build-images_file-download.sh
+          #bash cron_build-images_file-download.sh
