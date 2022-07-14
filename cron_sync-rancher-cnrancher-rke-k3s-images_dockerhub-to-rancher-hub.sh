@@ -5,6 +5,8 @@ sudo apt-get install jq -y
 sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
 cat /etc/resolv.conf
 
+#ping hub.rancher.org.cn -w 3
+
 touch version-list.txt
 touch images-done.txt
 touch images-all.txt
@@ -12,7 +14,7 @@ touch images-all.txt
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
-export registry=hub.rancher.cn
+export registry=hub.rancher.org.cn
 
 docker login ${registry} -u${RANCHER_HUB_ACC} -p${RANCHER_HUB_PW}
 docker login -u${DOCKER_HUB_ACC} -p${DOCKER_HUB_PW}
@@ -98,7 +100,7 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.org.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             fi
 
         # 如果镜像名中有一个 /，那么 / 左侧为项目名，右侧为镜像名和 tag
@@ -108,7 +110,7 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F"/" '{print $2}' | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.org.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             fi
         # 如果镜像名中有两个 /，
         elif [ ${n} -eq 2 ]; then
@@ -117,7 +119,7 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F"/" '{print $3}' | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.org.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             fi
         # 标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag，如不符合此标准，即为非有效镜像。
         else
@@ -126,9 +128,9 @@ docker_push() {
 
         echo " CHECK_STATUS_CODE = ${CHECK_STATUS_CODE} "
         if [[ ${CHECK_STATUS_CODE} == '0' ]]; then
-            echo "镜像 ${imgs} 已经同步"
+            echo "镜像 ${registry}/${imgs} 已同步"
         else
-            docker pull ${imgs}
+            docker pull ${imgs} 2>&1 > /dev/null
 
             if [[ -n "${global_namespace}" ]]; then
 
@@ -136,13 +138,16 @@ docker_push() {
                 if [ ${n} -eq 0 ]; then
                     export img_tag=${imgs}
                     #重命名镜像
+                    echo "TAG IMAGES ${registry}/${global_namespace}/${img_tag}"
                     docker tag ${imgs} ${registry}/${global_namespace}/${img_tag}
 
                     #上传镜像
-                    docker push ${registry}/${global_namespace}/${img_tag}
+                    echo "PUSH IMAGES ${registry}/${global_namespace}/${img_tag}"
+                    docker push ${registry}/${global_namespace}/${img_tag} 2>&1 > /dev/null
 
                     #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f
+                    echo "DELETE LOCAL IMAGES ${registry}/${global_namespace}/${img_tag}"
+                    docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f 2>&1 > /dev/null
 
                 # 如果镜像名中有一个/，那么/左侧为项目名，右侧为镜像名和tag
                 elif [ ${n} -eq 1 ]; then
@@ -151,22 +156,28 @@ docker_push() {
 
                     if echo "$NS" | grep -w ${namespace} > /dev/null; then
                         #重命名镜像
+                        echo "TAG IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
                         docker tag ${imgs} ${registry}/${namespace}/${img_tag}
 
                         #上传镜像
-                        docker push ${registry}/${namespace}/${img_tag}
+                        echo "PUSH IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                        docker push ${registry}/${namespace}/${img_tag} 2>&1 > /dev/null
 
                         #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
+                        echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                        docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f 2>&1 > /dev/null
                     else
                         #重命名镜像
+                        echo "TAG IMAGES ${imgs} ${registry}/${global_namespace}/${img_tag}"
                         docker tag ${imgs} ${registry}/${global_namespace}/${img_tag}
 
                         #上传镜像
-                        docker push ${registry}/${global_namespace}/${img_tag}
+                        echo "PUSH IMAGES ${imgs} ${registry}/${global_namespace}/${img_tag}"
+                        docker push ${registry}/${global_namespace}/${img_tag} 2>&1 > /dev/null
 
                         #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f
+                        echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${global_namespace}/${img_tag}"
+                        docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f 2>&1 > /dev/null
                     fi
 
                 # 如果镜像名中有两个/，
@@ -176,22 +187,29 @@ docker_push() {
 
                     if echo "$NS" | grep -w ${namespace} > /dev/null; then
                         #重命名镜像
+                        echo "TAG IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
                         docker tag ${imgs} ${registry}/${namespace}/${img_tag}
 
                         #上传镜像
-                        docker push ${registry}/${namespace}/${img_tag}
+                        echo "PUSH IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                        docker push ${registry}/${namespace}/${img_tag} 2>&1 > /dev/null
 
                         #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
+                        echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                        docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f 2>&1 > /dev/null
+
                     else
                         #重命名镜像
+                        echo "TAG IMAGES ${imgs} ${registry}/${global_namespace}/${img_tag}"
                         docker tag ${imgs} ${registry}/${global_namespace}/${img_tag}
 
                         #上传镜像
-                        docker push ${registry}/${global_namespace}/${img_tag}
+                        echo "PUSH IMAGES ${imgs} ${registry}/${global_namespace}/${img_tag}"
+                        docker push ${registry}/${global_namespace}/${img_tag} 2>&1 > /dev/null
 
                         #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f
+                        echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${global_namespace}/${img_tag}"
+                        docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f 2>&1 > /dev/null
                     fi
                 else
                     #标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag,如不符合此标准，即为非有效镜像。
@@ -208,13 +226,16 @@ docker_push() {
                     export img_tag=${imgs}
                     export namespace=library
                     #重命名镜像
+                    echo "TAG IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
                     docker tag ${imgs} ${registry}/${namespace}/${img_tag}
 
                     #上传镜像
-                    docker push ${registry}/${namespace}/${img_tag}
+                    echo "PUSH IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                    docker push ${registry}/${namespace}/${img_tag} 2>&1 > /dev/null
 
                     #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
+                    echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f 2>&1 > /dev/null
 
                 # 如果镜像名中有一个/，那么/左侧为项目名，右侧为镜像名和tag
                 elif [ ${n} -eq 1 ]; then
@@ -222,13 +243,16 @@ docker_push() {
                     export namespace=$(echo "${imgs}" | awk -F"/" '{print $1}')
 
                     #重命名镜像
+                    echo "TAG IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
                     docker tag ${imgs} ${registry}/${namespace}/${img_tag}
 
                     #上传镜像
-                    docker push ${registry}/${namespace}/${img_tag}
+                    echo "PUSH IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                    docker push ${registry}/${namespace}/${img_tag} 2>&1 > /dev/null
 
                     #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
+                    echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f 2>&1 > /dev/null
 
                 # 如果镜像名中有两个/，
                 elif [ ${n} -eq 2 ]; then
@@ -236,13 +260,16 @@ docker_push() {
                     export namespace=$(echo "${imgs}" | awk -F"/" '{print $2}')
 
                     #重命名镜像
+                    echo "TAG IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
                     docker tag ${imgs} ${registry}/${namespace}/${img_tag}
 
                     #上传镜像
-                    docker push ${registry}/${namespace}/${img_tag}
+                    echo "PUSH IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                    docker push ${registry}/${namespace}/${img_tag} 2>&1 > /dev/null
 
                     #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
+                    echo "DELETE LOCAL IMAGES ${imgs} ${registry}/${namespace}/${img_tag}"
+                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f 2>&1 > /dev/null
                 else
                     #标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag,如不符合此标准，即为非有效镜像。
                     echo "No available images"

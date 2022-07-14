@@ -26,8 +26,10 @@ jobs:
           RANCHER_HUB_PW: ${{ secrets.RANCHER_HUB_PW }}
           DOCKER_HUB_ACC: ${{ secrets.DOCKER_HUB_ACC }}
           DOCKER_HUB_PW: ${{ secrets.DOCKER_HUB_PW }}
+          HARBOR_IP: ${{ secrets.HARBOR_IP }}
           TZ: 'Asia/Shanghai'
         run: |
+          # echo "${HARBOR_IP} hub.rancher.org.cn" | sudo tee -a /etc/hosts
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
