@@ -43,10 +43,14 @@ do
         echo "已存在 cnrancher-images-${CNRANCHER}.txt"
         cat cnrancher-images-${CNRANCHER}.txt >> images-all.txt
     else
-        asset_id=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/v${CNRANCHER} | jq ".assets[] | select(.name == \"rancher-images.txt\").id" )
-        curl -J -sL -H "Authorization: token ${TOKEN}" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/${asset_id} -o cnrancher-images-${CNRANCHER}.txt
+        asset_id_1=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/v${CNRANCHER} | jq ".assets[] | select(.name == \"rancher-images.txt\").id" )
+        curl -J -sL -H "Authorization: token ${TOKEN}" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/${asset_id_1} -o cnrancher-images-${CNRANCHER}.txt
+
+        asset_id_2=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/v${CNRANCHER} | jq ".assets[] | select(.name == \"pandaria-catalog-images.txt\").id" )
+        curl -J -sL -H "Authorization: token ${TOKEN}" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/${asset_id_2} -o pandaria-catalog-images-${CNRANCHER}.txt
 
         cat cnrancher-images-${CNRANCHER}.txt >> images-all.txt
+        cat pandaria-catalog-images-${CNRANCHER}.txt >> images-all.txt
     fi
 done
 
