@@ -53,24 +53,16 @@ docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 # done
 
 # k3s 镜像
-#export K3S_VERSION=$( curl -L -u $token -s https://api.github.com/repos/rancher/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha" | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v -E '^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16' )
-
-export K3S_VERSION=$( curl -L -s https://api.github.com/repos/rancher/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha|^0|^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16" | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' )
-
+export K3S_VERSION=$( curl -u ${token} -s https://api.github.com/repos/k3s-io/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha|engine|lite" | grep -v -E '^0.|^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16|^1.17' )
 for K3S in $( echo "${K3S_VERSION}" );
 do
-    if [[ -f "k3s-images-v${K3S}.txt" ]] && [[ `cat "k3s-images-v${K3S}.txt" | wc -l` > 10 ]]; then
-        echo "已存在 k3s-images-v${K3S}.txt"
-        cat k3s-images-v${K3S}.txt >> k3s-images-all.txt
-    else
-        curl -LSs https://github.com/rancher/k3s/releases/download/v${K3S}/k3s-images.txt -o k3s-images-v${K3S}.txt
-        cat k3s-images-v${K3S}.txt >> rancher-images-all.txt
-    fi
+    curl -u ${token} -LSs https://github.com/k3s-io/k3s/releases/download/v${K3S}/k3s-images.txt >> rancher-images-all.txt
 done
 
 # 排序去重
 sort -u rancher-images-all.txt -o rancher-images-all.txt
 touch rancher-images-done.txt
+cat rancher-images-all.txt
 
 export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
 

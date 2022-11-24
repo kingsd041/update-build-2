@@ -57,11 +57,21 @@ docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
 
 export rke2_version=$( curl -L -u $token -s https://api.github.com/repos/rancher/rke2/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'alpha|rc|beta' | awk -F"." '{arr[$1"."$2]=$3}END{for(var in arr){if(arr[var]==""){print var}else{print var"."arr[var]}}}' | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | head -n 3)
 
+#for ver in $( echo "${rke2_version}" );
+#do
+#        curl -L -u $token -s https://github.com/rancher/rke2/releases/download/v${ver}/rke2-images.linux-amd64.txt -o rke2-images-v${ver}.txt
+#        cat rke2-images-v${ver}.txt | grep -v 'time=' >> rancher-images-all.txt
+#done
+
 for ver in $( echo "${rke2_version}" );
 do
-        curl -L -u $token -s https://github.com/rancher/rke2/releases/download/v${ver}/rke2-images.linux-amd64.txt -o rke2-images-v${ver}.txt
-        cat rke2-images-v${ver}.txt | grep -v 'time=' >> rancher-images-all.txt
+    browser_download_url_list=$( curl -LSs https://api.github.com/repos/rancher/rke2/releases/tags/v${ver} | jq ".assets[].browser_download_url" -r | grep txt | grep amd64 | grep linux )
+    for browser_download_url in ${browser_download_url_list};
+    do
+        curl -u $token -LSs ${browser_download_url} | grep -v 'time=' >> rancher-images-all.txt;
+    done
 done
+
 
 # # k3s 镜像
 # export K3S_VERSION=$( curl -u $token -s https://api.github.com/repos/rancher/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha" | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v -E '^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16' )
@@ -80,6 +90,7 @@ done
 # 排序去重
 sort -u rancher-images-all.txt -o rancher-images-all.txt
 touch rancher-images-done.txt
+cat rancher-images-all.txt
 
 export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
 
