@@ -29,7 +29,7 @@ jobs:
           HARBOR_IP: ${{ secrets.HARBOR_IP }}
           TZ: 'Asia/Shanghai'
         run: |
-          # echo "${HARBOR_IP} hub.rancher.org.cn" | sudo tee -a /etc/hosts
+          # echo "${HARBOR_IP} hub.rancher.cn" | sudo tee -a /etc/hosts
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"

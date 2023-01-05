@@ -5,7 +5,7 @@ sudo apt-get install jq -y
 sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
 cat /etc/resolv.conf
 
-#ping hub.rancher.org.cn -w 3
+#ping hub.rancher.cn -w 3
 
 touch version-list.txt
 touch images-done.txt
@@ -14,7 +14,7 @@ touch rancher-images-all.txt
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
-export registry=hub.rancher.org.cn
+export registry=hub.rancher.cn
 
 docker login ${registry} -u${RANCHER_HUB_ACC} -p${RANCHER_HUB_PW}
 docker login -u${DOCKER_HUB_ACC} -p${DOCKER_HUB_PW}
@@ -98,7 +98,7 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.org.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             fi
 
         # 如果镜像名中有一个 /，那么 / 左侧为项目名，右侧为镜像名和 tag
@@ -108,7 +108,7 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F"/" '{print $2}' | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.org.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             fi
         # 如果镜像名中有两个 /，
         elif [ ${n} -eq 2 ]; then
@@ -117,7 +117,7 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F"/" '{print $3}' | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.org.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             fi
         # 标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag，如不符合此标准，即为非有效镜像。
         else
