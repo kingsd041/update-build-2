@@ -1,0 +1,30 @@
+---
+kind: pipeline
+type: exec
+name: default
+
+clone:
+  depth: 10
+
+platform:
+  os: linux
+  arch: amd64
+
+trigger:
+  branch:
+    exclude:
+    - master
+
+steps:
+- name: git
+  commands:
+  - git config --global user.name "xiaoluhong"
+  - git config --global user.email "xiaoluhong@rancher.com"
+  - git config --global push.default simple
+- name: install dependence
+  commands:
+  - sudo apt-get install jq curl >> /dev/null;
+- name: run script
+  commands:
+  - chmod +x cron_update_repo.sh;
+  - bash cron_update_repo.sh;
