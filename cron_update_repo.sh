@@ -8,7 +8,7 @@ cat /etc/resolv.conf
 #export GITHUB_API_TOKEN=${CI_TOKEN}
 export GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
 export GITHUB_API_URL=https://api.github.com
-export REPO_NAME=xiaoluhong/update-build
+export REPO_NAME=xiaoluhong/update-build-2
 export REPO_BRANCHER=master
 export FILE_NAME=update.txt
 
