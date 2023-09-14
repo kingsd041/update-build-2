@@ -1,4 +1,4 @@
-name: cron_sync-cnrancher-images_dockerhub-to-aliyun
+name: k3s-images_dockerhub-to-aliyun
 
 on:
   push:
@@ -24,12 +24,10 @@ jobs:
           GITEE_PW: ${{ secrets.GITEE_PW }}
           ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
           ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
-          DOCKER_HUB_ACC: ${{ secrets.DOCKER_HUB_ACC }}
-          DOCKER_HUB_PW: ${{ secrets.DOCKER_HUB_PW }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          #bash cron_sync-cnrancher-images_dockerhub-to-aliyun.sh
+          bash cron_sync-k3s-images_dockerhub-to-aliyun.sh

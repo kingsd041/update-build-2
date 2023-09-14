@@ -1,4 +1,4 @@
-name: cron_sync-code_github-to-gitee
+name: k8s-images_gcr-to-aliyun
 
 on:
   push:
@@ -22,10 +22,12 @@ jobs:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
           GITEE_ACC: ${{ secrets.GITEE_ACC }}
           GITEE_PW: ${{ secrets.GITEE_PW }}
+          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
+          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          # bash cron_sync-code_github-to-gitee.sh
+          bash cron_sync-k8s-images_gcr-to-aliyun.sh

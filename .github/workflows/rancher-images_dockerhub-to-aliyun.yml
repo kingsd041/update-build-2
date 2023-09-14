@@ -1,0 +1,33 @@
+name: rancher-images_dockerhub-to-aliyun
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 */6 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run script
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+          GITEE_ACC: ${{ secrets.GITEE_ACC }}
+          GITEE_PW: ${{ secrets.GITEE_PW }}
+          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
+          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
+          TZ: 'Asia/Shanghai'
+        run: |
+          git config --global push.default matching
+          git config --global pull.ff only
+          git config --local user.email "xiaoluhong@rancher.com"
+          git config --local user.name "xiaoluhong"
+          bash cron_sync-rancher-images_dockerhub-to-aliyun.sh

@@ -1,6 +1,7 @@
-# 定时更新 xiaoluhong/k3s-sync 查看下的 update.txt 文件，来触发 https://travis-ci.com/github/xiaoluhong/k3s-sync 构建。
+# 定时修改 cnrancher/website:file-download 下的 update.txt 文件，触发dockerhub CICD 自动构建镜像
+# 定时修改 cnrancher/docs2:v1.4.x-rancher 下的 update.txt 文件，触发阿里云 CICD 自动构建镜像
 
-name: cron_sync-file_k3s-sync
+name: build-images_file-download
 
 on:
   push:
@@ -28,4 +29,4 @@ jobs:
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_sync-file_k3s-sync.sh
+          #bash cron_build-images_file-download.sh
