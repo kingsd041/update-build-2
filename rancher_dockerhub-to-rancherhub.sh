@@ -80,9 +80,9 @@ sort -u rancher-images-all-new.txt -o rancher-images-all-new.txt
 
 ls -all -h
 
-cat rancher-images-all-new.txt
+cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r
 
-export images=$( cat rancher-images-all-new.txt )
+export images=$( cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r )
 
 # 定义全局项目，如果想把镜像全部同步到一个仓库，则指定一个全局项目名称；
 # export global_namespace=rancher   # rancher
@@ -103,9 +103,9 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                echo 1 #export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             else
-                echo 2 #export CHECK_STATUS_CODE=1
+                export CHECK_STATUS_CODE=1
             fi
 
         # 如果镜像名中有一个 /，那么 / 左侧为项目名，右侧为镜像名和 tag
@@ -115,9 +115,9 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F"/" '{print $2}' | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                echo 3 # export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             else
-                echo 4 #export CHECK_STATUS_CODE=1
+                export CHECK_STATUS_CODE=1
             fi
         # 如果镜像名中有两个 /，
         elif [ ${n} -eq 2 ]; then
@@ -126,9 +126,9 @@ docker_push() {
             export tag=$(echo "${imgs}" | awk -F"/" '{print $3}' | awk -F':' '{print $2}')
 
             if [[ ${tag} != '' ]]; then
-                echo 5 # export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
+                export CHECK_STATUS_CODE=$( curl -LSs -X 'GET' -H 'accept: application/json' -u "${RANCHER_HUB_ACC}:${RANCHER_HUB_PW}" "https://hub.rancher.cn/api/v2.0/projects/${projects}/repositories/${repositories}/artifacts?page=-1&page_size=-1" | jq -r '.[].tags[].name' | grep -Fx -q ${tag} && echo $? )
             else
-                echo 6 # export CHECK_STATUS_CODE=1
+                export CHECK_STATUS_CODE=1
             fi
         # 标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag，如不符合此标准，即为非有效镜像。
         else

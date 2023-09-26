@@ -1,4 +1,4 @@
-name: k8s-images_gcr-to-aliyun
+name: rke2_dockerhub-to-rancherhub
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '0 */5 * * *'
+    - cron: '*/360 * * * *'
 
 defaults:
   run:
@@ -22,12 +22,15 @@ jobs:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
           GITEE_ACC: ${{ secrets.GITEE_ACC }}
           GITEE_PW: ${{ secrets.GITEE_PW }}
-          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
-          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
+          RANCHER_HUB_ACC: ${{ secrets.RANCHER_HUB_ACC }}
+          RANCHER_HUB_PW: ${{ secrets.RANCHER_HUB_PW }}
+          DOCKER_HUB_ACC: ${{ secrets.DOCKER_HUB_ACC }}
+          DOCKER_HUB_PW: ${{ secrets.DOCKER_HUB_PW }}
+          HARBOR_IP: ${{ secrets.HARBOR_IP }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_sync-k8s-images_gcr-to-aliyun.sh
+          bash rke2_dockerhub-to-rancherhub.sh

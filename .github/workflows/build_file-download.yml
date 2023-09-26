@@ -1,4 +1,7 @@
-name: images_file-download_dockerhub-to-aliyun
+# 定时修改 cnrancher/website:file-download 下的 update.txt 文件，触发dockerhub CICD 自动构建镜像
+# 定时修改 cnrancher/docs2:v1.4.x-rancher 下的 update.txt 文件，触发阿里云 CICD 自动构建镜像
+
+name: build_file-download
 
 on:
   push:
@@ -20,14 +23,10 @@ jobs:
       - name: Run script
         env:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
-          GITEE_ACC: ${{ secrets.GITEE_ACC }}
-          GITEE_PW: ${{ secrets.GITEE_PW }}
-          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
-          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_sync-images_file-download_dockerhub-to-aliyun.sh
+          #bash build_file-download.sh

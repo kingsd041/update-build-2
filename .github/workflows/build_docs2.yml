@@ -1,4 +1,7 @@
-name: rancher-images_dockerhub-to-rancher-hub
+# 定时修改 cnrancher/website:file-download 下的 update.txt 文件，触发dockerhub CICD 自动构建镜像
+# 定时修改 cnrancher/docs2:v1.4.x-rancher 下的 update.txt 文件，触发阿里云 CICD 自动构建镜像
+
+name: build_docs2
 
 on:
   push:
@@ -6,7 +9,7 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '*/360 * * * *'
+    - cron: '0 */12 * * *'
 
 defaults:
   run:
@@ -20,17 +23,10 @@ jobs:
       - name: Run script
         env:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
-          GITEE_ACC: ${{ secrets.GITEE_ACC }}
-          GITEE_PW: ${{ secrets.GITEE_PW }}
-          RANCHER_HUB_ACC: ${{ secrets.RANCHER_HUB_ACC }}
-          RANCHER_HUB_PW: ${{ secrets.RANCHER_HUB_PW }}
-          DOCKER_HUB_ACC: ${{ secrets.DOCKER_HUB_ACC }}
-          DOCKER_HUB_PW: ${{ secrets.DOCKER_HUB_PW }}
-          HARBOR_IP: ${{ secrets.HARBOR_IP }}
           TZ: 'Asia/Shanghai'
         run: |
           git config --global push.default matching
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_sync-rancher-images_dockerhub-to-rancher-hub.sh
+          bash build_docs2.sh

@@ -28,4 +28,4 @@ jobs:
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash cron_sync-file_k3s-sync.sh
+          bash file_k3s-sync.sh
