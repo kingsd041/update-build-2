@@ -73,7 +73,7 @@ done
 ##    done
 ##done
 
-cat rancher-images-all.txt | grep -vE 'documentation_url|{|}|Found|Not|AuthenticationFailed|AuthenticationErrorDetail|arm64|windows' | sed 's/Not Founddocker/docker/' | sed 's#registry.rancher.cn/##' > rancher-images-all-new.txt;
+cat rancher-images-all.txt | grep -vE 'documentation_url|{|}|Found|Not|AuthenticationFailed|AuthenticationErrorDetail|arm64|windows|status|404' | sed 's/Not Founddocker/docker/' | sed 's#registry.rancher.cn/##' > rancher-images-all-new.txt;
 
 # 排序去重
 sort -u rancher-images-all-new.txt -o rancher-images-all-new.txt;
