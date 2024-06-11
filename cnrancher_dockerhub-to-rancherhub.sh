@@ -22,7 +22,7 @@ docker login -u${DOCKER_HUB_ACC} -p${DOCKER_HUB_PW};
 #export RANCHER_VERSION=$( curl -u ${token} -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | grep -v windows | awk -Fv '{print $2}' | grep -v [a-z] | grep -vE '^0.|^1.|^2.0|^2.1|^2.2|^2.3'|awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r )
 #export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | grep -v windows | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
 #export CNRANCHER_VERSION=$( curl -L -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
-export CNRANCHER_VERSION=$( curl -L -u ${token} -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'rc|2.2'|sort -r );
+export CNRANCHER_VERSION=$( curl -L -u ${token} -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'rc|2.2|2.3|2.4'|sort -r );
 
 # # rancher 镜像
 ##for RANCHER in $( echo "${RANCHER_VERSION}" );
