@@ -84,8 +84,14 @@ done
 
 # 排序去重
 sort -u rancher-images-all.txt -o rancher-images-all.txt
+
+echo 'List all images'
 cat rancher-images-all.txt
 
+echo ''
+echo ''
+
+echo 'Download all images'
 export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
 
 # 定义全局项目，如果想把镜像全部同步到一个仓库，则指定一个全局项目名称；

@@ -78,10 +78,19 @@ cat rancher-images-all.txt | grep -vE 'documentation_url|{|}|Found|Not|Authentic
 # 排序去重
 sort -u rancher-images-all-new.txt -o rancher-images-all-new.txt;
 
+echo 'List all file'
 ls -all -h
 
+echo ''
+echo ''
+
+echo 'List all images'
 cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r;
 
+echo ''
+echo ''
+
+echo 'Download all images'
 export images=$( cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r );
 
 pull_tag_push_image(){
