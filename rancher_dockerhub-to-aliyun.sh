@@ -8,6 +8,7 @@ cat /etc/resolv.conf
 touch rancher-version-list.txt
 touch rancher-images-done.txt
 touch rancher-images-all.txt
+touch rancher-images-all-new.txt
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
@@ -81,18 +82,25 @@ done
 #         cat k3s-images-v${K3S}.txt >> rancher-images-all.txt
 #     fi
 # done
+#
+# 去除 'Not Found'
+if cat rancher-images-all.txt 2>&1 | grep Foundrancher > /dev/null ; then
+    cat rancher-images-all.txt 2>&1 | grep Foundrancher | awk -F'Foundrancher' '{print "rancher" $2}' >> rancher-images-1.txt;
+    cat rancher-images-all.txt 2>&1 | grep -v Foundrancher >> rancher-images-all-new.txt;
+    cat rancher-images-1.txt 2>&1 >> rancher-images-all-new.txt;
+fi
 
 # 排序去重
-sort -u rancher-images-all.txt -o rancher-images-all.txt
+sort -u rancher-images-all-new.txt -o rancher-images-all-new.txt
 
 echo 'List all images'
-cat rancher-images-all.txt
+cat rancher-images-all-new.txt
 
 echo ''
 echo ''
 
 echo 'Download all images'
-export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
+export images=$( cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r | grep -vE 'Found|Not' )
 
 # 定义全局项目，如果想把镜像全部同步到一个仓库，则指定一个全局项目名称；
 export global_namespace=rancher   # rancher

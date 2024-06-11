@@ -80,8 +80,16 @@ sort -u rancher-images-all-new.txt -o rancher-images-all-new.txt
 
 ls -all -h
 
+echo ''
+echo ''
+
+echo 'List all images'
 cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r
 
+echo ''
+echo ''
+
+echo 'Download all images'
 export images=$( cat rancher-images-all-new.txt | sort +0 -1 +1n -2 -r )
 
 # 定义全局项目，如果想把镜像全部同步到一个仓库，则指定一个全局项目名称；
