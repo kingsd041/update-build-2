@@ -1,0 +1,32 @@
+# 定时修改 cnrancher/website:file-download 下的 update.txt 文件，触发dockerhub CICD 自动构建镜像
+# 定时修改 cnrancher/docs2:v1.4.x-rancher 下的 update.txt 文件，触发阿里云 CICD 自动构建镜像
+
+name: build_docs2
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 */12 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run script
+        env:
+          CI_TOKEN: ${{ secrets.CI_TOKEN }}
+          TZ: 'Asia/Shanghai'
+        run: |
+          git config --global push.default matching
+          git config --global pull.ff only
+          git config --local user.email "xiaoluhong@rancher.com"
+          git config --local user.name "xiaoluhong"
+          bash build_docs2.sh
