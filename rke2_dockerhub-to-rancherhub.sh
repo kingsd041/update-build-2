@@ -61,7 +61,7 @@ docker login -u${DOCKER_HUB_ACC} -p${DOCKER_HUB_PW}
 ##done
 ##
 # rke2 镜像
-export rke2_version=$( curl -u ${token} -L -s https://api.github.com/repos/rancher/rke2/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'alpha|rc|beta|^1.18|^1.19' | awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r  )
+export rke2_version=$( curl -u ${token} -L -s https://api.github.com/repos/rancher/rke2/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E 'alpha|rc|beta|^1.18|^1.19|^1.20|^1.21|^1.22' | awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r  )
 
 for ver in $( echo "${rke2_version}" );
 do
