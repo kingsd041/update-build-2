@@ -8,7 +8,13 @@ cat /etc/resolv.conf
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
-export registry=registry.cn-hangzhou.aliyuncs.com
+export SOURCE_REGISTRY="docker.io"
+export DEST_REGISTRY="registry.cn-hangzhou.aliyuncs.com"
+export IMAGE_LIST="rancher-images-all.txt"
+export JOBS=4
+export ARCH_LIST="amd64,arm64"
+export OS_LIST="linux,windows"
+export RETRY_REGISTRY="docker.io"
 
 # k3s 镜像
 export K3S_VERSION=$( curl -u ${token} -LSs https://api.github.com/repos/k3s-io/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha|engine|lite" | grep -v -E '^0.|^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16|^1.17|^1.18|^1.19' | awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r )
@@ -42,16 +48,7 @@ cnrancher
 
 cat >sync-k3s-to-aliyun.sh <<EOL
 #!/bin/bash
-
-    SOURCE_REGISTRY="docker.io"
-    DEST_REGISTRY="registry.cn-hangzhou.aliyuncs.com"
-    IMAGE_LIST="rancher-images-all.txt"
-    JOBS=4
-    ARCH_LIST="amd64,arm64"
-    OS_LIST="linux,windows"
-    RETRY_REGISTRY="docker.io"
-    echo "Start mirror image list: $IMAGE_LIST"
-
+    # 添加调试信息
     echo "Start mirror image list: $IMAGE_LIST"
     echo "Source registry: $SOURCE_REGISTRY"
     echo "Destination registry: $DEST_REGISTRY"
@@ -59,6 +56,8 @@ cat >sync-k3s-to-aliyun.sh <<EOL
     echo "Arch list: $ARCH_LIST"
     echo "OS list: $OS_LIST"
     echo "Retry registry: $RETRY_REGISTRY"
+
+    echo "Start mirror image list: $IMAGE_LIST"
 
     hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
