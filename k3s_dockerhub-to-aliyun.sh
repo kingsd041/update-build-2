@@ -58,7 +58,7 @@ hangar mirror validate \
     --source='docker.io' \
     --destination='${registry}' \
     --arch=amd64,arm64 \
-    --destination-project ksd-test \
+    --destination-project ${global_namespace} \
     --os=linux \
     --jobs=4
 
