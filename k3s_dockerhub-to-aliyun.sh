@@ -132,6 +132,6 @@ EOL
 
 ls -l 
 
-docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh "docker.io" "${registry}" "rancher-images-all.txt" 5 "amd64,arm64" "linux,windows" "RETRY_REGISTRY"
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh "docker.io" "registry.cn-hangzhou.aliyuncs.com" "rancher-images-all.txt" 5 "amd64,arm64" "linux,windows"
 
 
