@@ -43,13 +43,13 @@ cnrancher
 cat >sync-k3s-to-aliyun.sh <<EOL
 #!/bin/bash
 
-    SOURCE_REGISTRY="${1}"
-    DEST_REGISTRY="${2}"
-    IMAGE_LIST=${3}
-    JOBS=${4:-"5"}
-    ARCH_LIST=${5:-"amd64,arm64"}
-    OS_LIST=${6:-"linux,windows"}
-    RETRY_REGISTRY=${7:-"$SOURCE_REGISTRY"}
+    SOURCE_REGISTRY="docker.io"
+    DEST_REGISTRY="registry.cn-hangzhou.aliyuncs.com"
+    IMAGE_LIST="rancher-images-all.txt"
+    JOBS=4
+    ARCH_LIST="amd64,arm64"
+    OS_LIST="linux,windows"
+    RETRY_REGISTRY="docker.io"
     echo "Start mirror image list: $IMAGE_LIST"
 
     hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
@@ -132,6 +132,6 @@ EOL
 
 ls -l 
 
-docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh "docker.io" "registry.cn-hangzhou.aliyuncs.com" "rancher-images-all.txt" 5 "amd64,arm64" "linux,windows"
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh 
 
 
