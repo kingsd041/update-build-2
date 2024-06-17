@@ -43,13 +43,13 @@ cnrancher
 cat >sync-k3s-to-aliyun.sh <<EOL
 #!/bin/bash
 
-    local SOURCE_REGISTRY="${1}"
-    local DEST_REGISTRY="${2}"
-    local IMAGE_LIST=${3}
-    local JOBS=${4:-"5"}
-    local ARCH_LIST=${5:-"amd64,arm64"}
-    local OS_LIST=${6:-"linux,windows"}
-    local RETRY_REGISTRY=${7:-"$SOURCE_REGISTRY"}
+    SOURCE_REGISTRY="${1}"
+    DEST_REGISTRY="${2}"
+    IMAGE_LIST=${3}
+    JOBS=${4:-"5"}
+    ARCH_LIST=${5:-"amd64,arm64"}
+    OS_LIST=${6:-"linux,windows"}
+    RETRY_REGISTRY=${7:-"$SOURCE_REGISTRY"}
     echo "Start mirror image list: $IMAGE_LIST"
 
     hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
