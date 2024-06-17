@@ -42,33 +42,96 @@ cnrancher
 
 cat >sync-k3s-to-aliyun.sh <<EOL
 #!/bin/bash
-hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
-hangar mirror --debug \
-    -f 'rancher-images-all.txt' \
-    -s 'docker.io' \
-    -d '${registry}' \
-    --arch amd64,arm64 \
-    --destination-project ${global_namespace} \
-    --os linux \
-    --tls-verify=false
+    local SOURCE_REGISTRY="${1}"
+    local DEST_REGISTRY="${2}"
+    local IMAGE_LIST=${3}
+    local JOBS=${4:-"5"}
+    local ARCH_LIST=${5:-"amd64,arm64"}
+    local OS_LIST=${6:-"linux,windows"}
+    local RETRY_REGISTRY=${7:-"$SOURCE_REGISTRY"}
+    echo "Start mirror image list: $IMAGE_LIST"
 
-hangar mirror validate --debug \
-    --file='rancher-images-all.txt' \
-    --source='docker.io' \
-    --destination='${registry}' \
-    --arch=amd64,arm64 \
-    --destination-project ${global_namespace} \
-    --os=linux \
-    --jobs=4
+    hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
-echo "查看 mirror-failed.txt"
-cat mirror-failed.txt
+    hangar mirror \
+        --source="$SOURCE_REGISTRY" \
+        --destination="$DEST_REGISTRY" \
+        --file="$IMAGE_LIST" \
+        --jobs="$JOBS" \
+        --arch="$ARCH_LIST" \
+        --os="$OS_LIST" \
+        --timeout=60m \
+        --skip-login || true
 
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are some images failed to mirror:"
+        cat mirror-failed.txt
+        echo "-------------------------------"
+        mv mirror-failed.txt mirror-failed-1.txt
+        hangar mirror \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="./mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --skip-login || true
+    fi
+
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are still some images failed to mirror after retry:"
+        cat mirror-failed.txt
+        exit 1
+    fi
+
+    echo "-------------------------------"
+    hangar mirror validate \
+        --source="$SOURCE_REGISTRY" \
+        --destination="$DEST_REGISTRY" \
+        --file $IMAGE_LIST --jobs $JOBS \
+        --arch="$ARCH_LIST" \
+        --os="$OS_LIST" \
+        --jobs=$JOBS \
+        --skip-login || true
+
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are some images failed to validate:"
+        cat mirror-failed.txt
+        echo "-------------------------------"
+        mv mirror-failed.txt mirror-failed-1.txt
+        echo "Re-mirror the validate failed images:"
+        hangar mirror \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --skip-login || true
+        echo "-------------------------------"
+        echo "Re-validate the validate failed images:"
+        hangar mirror validate \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --skip-login || true
+    fi
+
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are still some images failed to validate after retry:"
+        cat mirror-failed.txt
+        exit 1
+    fi
 EOL
+
+# mirror_image "SOURCE_REGISTRY" "DEST_REGISTRY" "rancher-images.txt" 5 "amd64,arm64" "linux,windows" "RETRY_REGISTRY"
 
 ls -l 
 
-docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh "docker.io" "${registry}" "rancher-images-all.txt" 5 "amd64,arm64" "linux,windows" "RETRY_REGISTRY"
 
 
