@@ -44,7 +44,7 @@ cat >sync-k3s-to-aliyun.sh <<EOL
 #!/bin/bash
 hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
-hangar mirror \
+hangar mirror --debug \
     -f 'rancher-images-all.txt' \
     -s 'docker.io' \
     -d '${registry}' \
@@ -53,7 +53,7 @@ hangar mirror \
     --os linux \
     --tls-verify=false
 
-hangar mirror validate \
+hangar mirror validate --debug \
     --file='rancher-images-all.txt' \
     --source='docker.io' \
     --destination='${registry}' \
@@ -61,6 +61,9 @@ hangar mirror validate \
     --destination-project ${global_namespace} \
     --os=linux \
     --jobs=4
+
+echo "查看 mirror-failed.txt"
+cat mirror-failed.txt
 
 EOL
 
