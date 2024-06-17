@@ -52,6 +52,16 @@ hangar mirror \
     --destination-project ${global_namespace} \
     --os linux \
     --tls-verify=false
+
+hangar mirror validate \
+    --file='rancher-images-all.txt' \
+    --source='docker.io' \
+    --destination='${registry}' \
+    --arch=amd64,arm64 \
+    --destination-project ksd-test \
+    --os=linux \
+    --jobs=4
+
 EOL
 
 ls -l 
