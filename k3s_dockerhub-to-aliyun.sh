@@ -52,6 +52,14 @@ cat >sync-k3s-to-aliyun.sh <<EOL
     RETRY_REGISTRY="docker.io"
     echo "Start mirror image list: $IMAGE_LIST"
 
+    echo "Start mirror image list: $IMAGE_LIST"
+    echo "Source registry: $SOURCE_REGISTRY"
+    echo "Destination registry: $DEST_REGISTRY"
+    echo "Jobs: $JOBS"
+    echo "Arch list: $ARCH_LIST"
+    echo "OS list: $OS_LIST"
+    echo "Retry registry: $RETRY_REGISTRY"
+
     hangar login ${registry} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
     hangar mirror \
