@@ -30,4 +30,4 @@ jobs:
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash file-download_dockerhub-to-aliyun.sh
+          # bash file-download_dockerhub-to-aliyun.sh

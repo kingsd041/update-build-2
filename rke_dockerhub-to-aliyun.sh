@@ -8,220 +8,147 @@ cat /etc/resolv.conf
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
-export registry=registry.cn-hangzhou.aliyuncs.com
-
-docker login ${registry} -u${ALIYUN_ACC} -p${ALIYUN_PW}
-
-# export RANCHER_VERSION=$( curl -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v ^1. )
-# export CNRANCHER_VERSION=$( curl -u $token -s https://api.github.com/repos/cnrancher/pandaria/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep -v 'rc' | grep -vE 'v2.2.1-|v2.2.2-|v2.2.3-|v2.2.4-')
-# 
-# # rancher 镜像
-# for RANCHER in $( echo "${RANCHER_VERSION}" );
-# do
-#     if [[ -f "rancher-images-v${RANCHER}.txt" ]] && [[ `cat "rancher-images-v${RANCHER}.txt" | wc -l` > 10 ]]; then
-#         echo "已存在 rancher-images-v${RANCHER}.txt"
-#         cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
-#     else
-#         curl -LSs https://github.com/rancher/rancher/releases/download/v${RANCHER}/rancher-images.txt -o rancher-images-v${RANCHER}.txt
-#         cat rancher-images-v${RANCHER}.txt >> rancher-images-all.txt
-#     fi
-# done
-# 
-# # cnrancher 镜像
-# for CNRANCHER in $( echo "${CNRANCHER_VERSION}" );
-# do
-#     if [[ -f "rancher-images-cn-${CNRANCHER}.txt" ]] && [[ `cat "rancher-images-cn-${CNRANCHER}.txt" | wc -l` > 10 ]]; then
-#         echo "已存在 rancher-images-cn-${CNRANCHER}.txt"
-#         cat rancher-images-cn-${CNRANCHER}.txt >> rancher-images-all.txt
-#     else
-#         asset_id=$( curl -H "Authorization: token ${TOKEN}" -H "Accept: application/vnd.github.v3.raw" -s https://api.github.com/repos/cnrancher/pandaria/releases/tags/${CNRANCHER} | jq ".assets[] | select(.name == \"rancher-images.txt\").id" )
-#         curl -J -sL -H "Authorization: token $TOKEN" -H "Accept: application/octet-stream" https://api.github.com/repos/cnrancher/pandaria/releases/assets/$asset_id -o rancher-images-cn-${CNRANCHER}.txt
-# 
-#         cat rancher-images-cn-${CNRANCHER}.txt >> rancher-images-all.txt
-#     fi
-# done
+export SOURCE_REGISTRY="docker.io"
+export DEST_REGISTRY="registry.cn-hangzhou.aliyuncs.com"
+export IMAGE_LIST="rancher-images-all.txt"
+export JOBS=4
+export ARCH_LIST="amd64,arm64"
+export OS_LIST="linux,windows"
+export RETRY_REGISTRY="docker.io"
+export DEST_REGISTRY_PROJECT="rancher"
 
 # rke 镜像
-export rke_version=$( curl -L -u ${token} -s https://api.github.com/repos/rancher/rke/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] |grep -v -E '^0.' | awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r )
+export rke_version=$( curl -L -u ${token} -s https://api.github.com/repos/rancher/rke/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] |grep -v -E '^0.|^1.0|^1.1|^1.2|^1.3' | awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r )
 
 for ver in $( echo "${rke_version}" );
 do
         curl -LSs https://github.com/rancher/rke/releases/download/v${ver}/rke_linux-amd64 -o ./rke${ver}
         chmod +x ./rke${ver}
         ls -all -h
-        ./rke${ver} config --system-images --all | grep -v 'time=' >> rancher-images-all.txt
+        ./rke${ver} config --system-images --all | grep -v 'time=' >> $IMAGE_LIST
 done
 
-# # k3s 镜像
-# export K3S_VERSION=$( curl -u $token -s https://api.github.com/repos/rancher/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha" | sort -u -t "." -k1nr,1 -k2nr,2 -k3nr,3 | grep -v ^0. | grep -v -E '^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16' )
-#
-# for K3S in $( echo "${K3S_VERSION}" );
-# do
-#     if [[ -f "k3s-images-v${K3S}.txt" ]] && [[ `cat "k3s-images-v${K3S}.txt" | wc -l` > 3 ]]; then
-#         echo "已存在 k3s-images-v${K3S}.txt"
-#         cat k3s-images-v${K3S}.txt >> k3s-images-all.txt
-#     else
-#         curl -LSs https://github.com/rancher/k3s/releases/download/v${K3S}/k3s-images.txt -o k3s-images-v${K3S}.txt
-#         cat k3s-images-v${K3S}.txt >> rancher-images-all.txt
-#     fi
-# done
-
 # 排序去重
-sort -u rancher-images-all.txt -o rancher-images-all.txt
-touch rancher-images-done.txt
+sort -u $IMAGE_LIST -o $IMAGE_LIST
+
+# 去掉 dockerhub 中不存在的镜像
+
+sed -i '/noiro\/opflex-server:5.2.7.1.81c2369/d' $IMAGE_LIST
+sed -i '/noiro\/gbp-server:5.2.7.1.81c2369/d' $IMAGE_LIST
 
 echo ''
 echo ''
 
 echo 'List all images'
-cat rancher-images-all.txt
+cat $IMAGE_LIST
 
 echo ''
 echo ''
 
 echo 'Download all images'
-export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
+export images=$( cat $IMAGE_LIST | grep -vE 'Found|Not' )
 
 # 定义全局项目，如果想把镜像全部同步到一个仓库，则指定一个全局项目名称；
-export global_namespace=rancher   # rancher
-export NS='
-rancher
-cnrancher
-'
+#export global_namespace=rancher   # rancher
+#export NS='
+#rancher
+#cnrancher
+#'
 
-docker_push() {
-    for imgs in $( echo "${images}" ); do
+# 生成 hangar 同步的执行脚本
+cat >sync-rke-to-aliyun.sh <<EOL
+#!/bin/bash
+    # 添加调试信息
+    echo "Start mirror image list: $IMAGE_LIST"
+    echo "Source registry: $SOURCE_REGISTRY"
+    echo "Destination registry: $DEST_REGISTRY"
+    echo "Jobs: $JOBS"
+    echo "Arch list: $ARCH_LIST"
+    echo "OS list: $OS_LIST"
+    echo "Retry registry: $RETRY_REGISTRY"
 
-        if cat rancher-images-done.txt | grep -w ${imgs} > /dev/null ; then
-            echo "镜像${imgs}已经同步"
-        else
-            docker pull ${imgs}
+    echo "Start mirror image list: $IMAGE_LIST"
 
-            if [[ -n "${global_namespace}" ]]; then
+    hangar login ${DEST_REGISTRY} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
-                n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
+    hangar mirror \
+        --source="$SOURCE_REGISTRY" \
+        --destination="$DEST_REGISTRY" \
+        --file="$IMAGE_LIST" \
+        --jobs="$JOBS" \
+        --arch="$ARCH_LIST" \
+        --os="$OS_LIST" \
+        --timeout=60m \
+        --destination-project=$DEST_REGISTRY_PROJECT \
+        --skip-login || true
 
-                # 如果镜像名中没有/，那么此镜像一定是library仓库的镜像；
-                if [ ${n} -eq 0 ]; then
-                    export img_tag=${imgs}
-                    #重命名镜像
-                    docker tag ${imgs} ${registry}/${global_namespace}/${img_tag}
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are some images failed to mirror:"
+        cat mirror-failed.txt
+        echo "-------------------------------"
+        mv mirror-failed.txt mirror-failed-1.txt
+        hangar mirror \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="./mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --destination-project=$DEST_REGISTRY_PROJECT \
+            --skip-login || true
+    fi
 
-                    #上传镜像
-                    docker push ${registry}/${global_namespace}/${img_tag}
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are still some images failed to mirror after retry:"
+        cat mirror-failed.txt
+        exit 1
+    fi
 
-                    #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f
+    echo "-------------------------------"
+    hangar mirror validate \
+        --source="$SOURCE_REGISTRY" \
+        --destination="$DEST_REGISTRY" \
+        --file $IMAGE_LIST \
+        --arch="$ARCH_LIST" \
+        --os="$OS_LIST" \
+        --jobs=$JOBS \
+        --destination-project=$DEST_REGISTRY_PROJECT \
+        --skip-login || true
 
-                # 如果镜像名中有一个/，那么/左侧为项目名，右侧为镜像名和tag
-                elif [ ${n} -eq 1 ]; then
-                    export img_tag=$(echo "${imgs}" | awk -F"/" '{print $2}')
-                    export namespace=$(echo "${imgs}" | awk -F"/" '{print $1}')
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are some images failed to validate:"
+        cat mirror-failed.txt
+        echo "-------------------------------"
+        mv mirror-failed.txt mirror-failed-1.txt
+        echo "Re-mirror the validate failed images:"
+        hangar mirror \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --destination-project=$DEST_REGISTRY_PROJECT \
+            --skip-login || true
+            
+        echo "-------------------------------"
+        echo "Re-validate the validate failed images:"
+        hangar mirror validate \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --destination-project=$DEST_REGISTRY_PROJECT \
+            --skip-login || true
+    fi
 
-                    if echo "$NS" | grep -w ${namespace} > /dev/null; then
-                        #重命名镜像
-                        docker tag ${imgs} ${registry}/${namespace}/${img_tag}
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are still some images failed to validate after retry:"
+        cat mirror-failed.txt
+        exit 1
+    fi
+EOL
 
-                        #上传镜像
-                        docker push ${registry}/${namespace}/${img_tag}
-
-                        #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
-                    else
-                        #重命名镜像
-                        docker tag ${imgs} ${registry}/${global_namespace}/${img_tag}
-
-                        #上传镜像
-                        docker push ${registry}/${global_namespace}/${img_tag}
-
-                        #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f
-                    fi
-
-                # 如果镜像名中有两个/，
-                elif [ ${n} -eq 2 ]; then
-                    export img_tag=$(echo "${imgs}" | awk -F"/" '{print $3}')
-                    export namespace=$(echo "${imgs}" | awk -F"/" '{print $2}')
-
-                    if echo "$NS" | grep -w ${namespace} > /dev/null; then
-                        #重命名镜像
-                        docker tag ${imgs} ${registry}/${namespace}/${img_tag}
-
-                        #上传镜像
-                        docker push ${registry}/${namespace}/${img_tag}
-
-                        #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
-                    else
-                        #重命名镜像
-                        docker tag ${imgs} ${registry}/${global_namespace}/${img_tag}
-
-                        #上传镜像
-                        docker push ${registry}/${global_namespace}/${img_tag}
-
-                        #删除旧镜像
-                        docker rmi ${imgs} ${registry}/${global_namespace}/${img_tag} -f
-                    fi
-                else
-                    #标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag,如不符合此标准，即为非有效镜像。
-                    echo "No available images"
-                fi
-
-                echo "${imgs}" >> rancher-images-done.txt
-            else
-
-                export n=$(echo "${imgs}" | awk -F"/" '{print NF-1}')
-
-                # 如果镜像名中没有/，那么此镜像一定是library仓库的镜像；
-                if [ ${n} -eq 0 ]; then
-                    export img_tag=${imgs}
-                    export namespace=library
-                    #重命名镜像
-                    docker tag ${imgs} ${registry}/${namespace}/${img_tag}
-
-                    #上传镜像
-                    docker push ${registry}/${namespace}/${img_tag}
-
-                    #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
-
-                # 如果镜像名中有一个/，那么/左侧为项目名，右侧为镜像名和tag
-                elif [ ${n} -eq 1 ]; then
-                    export img_tag=$(echo "${imgs}" | awk -F"/" '{print $2}')
-                    export namespace=$(echo "${imgs}" | awk -F"/" '{print $1}')
-
-                    #重命名镜像
-                    docker tag ${imgs} ${registry}/${namespace}/${img_tag}
-
-                    #上传镜像
-                    docker push ${registry}/${namespace}/${img_tag}
-
-                    #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
-
-                # 如果镜像名中有两个/，
-                elif [ ${n} -eq 2 ]; then
-                    export img_tag=$(echo "${imgs}" | awk -F"/" '{print $3}')
-                    export namespace=$(echo "${imgs}" | awk -F"/" '{print $2}')
-
-                    #重命名镜像
-                    docker tag ${imgs} ${registry}/${namespace}/${img_tag}
-
-                    #上传镜像
-                    docker push ${registry}/${namespace}/${img_tag}
-
-                    #删除旧镜像
-                    docker rmi ${imgs} ${registry}/${namespace}/${img_tag} -f
-                else
-                    #标准镜像为四层结构，即：仓库地址/项目名/镜像名:tag,如不符合此标准，即为非有效镜像。
-                    echo "No available images"
-                fi
-
-                echo "${imgs}" >> rancher-images-done.txt
-
-            fi
-        fi
-    done
-}
-
-docker_push
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-rke-to-aliyun.sh 

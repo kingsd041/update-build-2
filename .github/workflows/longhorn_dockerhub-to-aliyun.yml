@@ -1,4 +1,4 @@
-name: rancher_dockerhub-to-aliyun
+name: longhorn_dockerhub-to-aliyun
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: '0 */12 * * *'
+    - cron: '0 */6 * * *'
 
 defaults:
   run:
@@ -20,8 +20,6 @@ jobs:
       - name: Run script
         env:
           CI_TOKEN: ${{ secrets.CI_TOKEN }}
-          GITEE_ACC: ${{ secrets.GITEE_ACC }}
-          GITEE_PW: ${{ secrets.GITEE_PW }}
           ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
           ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
           TZ: 'Asia/Shanghai'
@@ -30,4 +28,4 @@ jobs:
           git config --global pull.ff only
           git config --local user.email "xiaoluhong@rancher.com"
           git config --local user.name "xiaoluhong"
-          bash rancher_dockerhub-to-aliyun.sh
+          bash longhorn_dockerhub-to-aliyun.sh

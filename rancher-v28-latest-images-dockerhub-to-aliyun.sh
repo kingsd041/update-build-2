@@ -1,56 +1,96 @@
 #!/bin/bash
 
-sudo apt-get install jq -y
+# sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
+# cat /etc/resolv.conf
 
-sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
-cat /etc/resolv.conf
+# 清理 action 镜像磁盘空间
+# https://github.com/actions/runner-images/issues/2840
+sudo rm -rf /usr/share/dotnet
+sudo rm -rf /opt/ghc
+sudo rm -rf "/usr/local/share/boost"
+sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+sudo apt-get install jq -y
 
 export ROOT_DIR="${PWD}"
 export TOKEN=${CI_TOKEN}
 export token=xiaoluhong:${TOKEN}
 export SOURCE_REGISTRY="docker.io"
 export DEST_REGISTRY="registry.cn-hangzhou.aliyuncs.com"
-export IMAGE_LIST="rancher-images-all.txt"
 export JOBS=4
-export ARCH_LIST=""
+export ARCH_LIST="amd64,arm64"
 export OS_LIST="linux,windows"
 export RETRY_REGISTRY="docker.io"
 
-# k3s 镜像
-export K3S_VERSION=$( curl -u ${token} -LSs https://api.github.com/repos/k3s-io/k3s/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v -E "rc|alpha|engine|lite" | grep -v -E '^0.|^1.0|^1.10|^1.12|^1.13|^1.14|^1.15|^1.16|^1.17|^1.18|^1.19|^1.20|^1.21|^1.22|^1.23|^1.24|^1.25|^1.26' | awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r )
-for K3S in $( echo "${K3S_VERSION}" );
-do
-    curl -u ${token} -LSs https://github.com/k3s-io/k3s/releases/download/v${K3S}/k3s-images.txt >> rancher-images-all.txt
-done
+# v2.8-global-kdm-data.json: Global KDM data.json
+export CATTLE_KDM_BRANCH="release-v2.8"
+export RANCHER_MAJOR_MINOR_VERSION="2.8"
+
+GLOBAL_KDM_FILENAME="${RANCHER_MAJOR_MINOR_VERSION}-global-kdm-data.json"
+
+
+# v2.8-global-versions.txt: Global KDM 版本列表
+GENERATED_GLOBAL_VERSION_LIST="$RANCHER_MAJOR_MINOR_VERSION-global-versions.txt"
+
+# GLOBAL KDM all images
+GENERATED_GLOBAL_IMAGE_LIST="$RANCHER_MAJOR_MINOR_VERSION-global-images.txt"
+
+echo "Download $RANCHER_MAJOR_MINOR_VERSION GC KDM data.json"
+wget --tries=3 https://releases.rancher.com/kontainer-driver-metadata/${CATTLE_KDM_BRANCH}/data.json -O $GLOBAL_KDM_FILENAME
+
+# Ensure the download file is not empty.
+if [ ! -s $GLOBAL_KDM_FILENAME ]; then
+    ls -alh *.json
+    echo "Failed to download KDM data.json, file is empty!"
+    exit 1
+fi
+
+# Generate KDM image list from drone CI since the EKSCI cannot
+# download assets from GitHub Release.
+echo "Generate image list from Global RPM KDM data.json"
+
+cat >generate-rancher-list.sh <<EOL
+#!/bin/bash
+hangar generate-list \
+    --rancher="$RANCHER_MAJOR_MINOR_VERSION.99" \
+    --kdm="$GLOBAL_KDM_FILENAME" \
+    --output="$GENERATED_GLOBAL_IMAGE_LIST" \
+    --output-versions="$GENERATED_GLOBAL_VERSION_LIST" \
+    --auto-yes
+echo "Generated KDM versions of Global $RANCHER_MAJOR_MINOR_VERSION.99 :"
+cat $GENERATED_GLOBAL_VERSION_LIST
+EOL
+
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash generate-rancher-list.sh
+
 
 # 排序去重
-sort -u rancher-images-all.txt -o rancher-images-all.txt
-touch rancher-images-done.txt
+sort -u $GENERATED_GLOBAL_VERSION_LIST -o $GENERATED_GLOBAL_VERSION_LIST
 
 echo ''
 echo ''
 
 echo 'List all images'
-cat rancher-images-all.txt
+cat $GENERATED_GLOBAL_VERSION_LIST
 
 echo ''
 echo ''
 
 echo 'Download all images'
-export images=$( cat rancher-images-all.txt | grep -vE 'Found|Not' )
+export images=$( cat $GENERATED_GLOBAL_VERSION_LIST | grep -vE 'Found|Not' )
 
 # 定义全局项目，如果想把镜像全部同步到一个仓库，则指定一个全局项目名称；
-# export global_namespace=rancher   # rancher
-# export NS='
-# rancher
-# cnrancher
-# '
+#export global_namespace=rancher   # rancher
+#export NS='
+#rancher
+#cnrancher
+#'
 
 # 生成 hangar 同步的执行脚本
-cat >sync-k3s-to-aliyun.sh <<EOL
+cat >sync-rancher28-to-aliyun.sh <<EOL
 #!/bin/bash
     # 添加调试信息
-    echo "Start mirror image list: $IMAGE_LIST"
+    echo "Start mirror image list: $GENERATED_GLOBAL_IMAGE_LIST"
     echo "Source registry: $SOURCE_REGISTRY"
     echo "Destination registry: $DEST_REGISTRY"
     echo "Jobs: $JOBS"
@@ -58,14 +98,14 @@ cat >sync-k3s-to-aliyun.sh <<EOL
     echo "OS list: $OS_LIST"
     echo "Retry registry: $RETRY_REGISTRY"
 
-    echo "Start mirror image list: $IMAGE_LIST"
+    echo "Start mirror image list: $GENERATED_GLOBAL_IMAGE_LIST"
 
     hangar login ${DEST_REGISTRY} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
     hangar mirror \
         --source="$SOURCE_REGISTRY" \
         --destination="$DEST_REGISTRY" \
-        --file="$IMAGE_LIST" \
+        --file="$GENERATED_GLOBAL_IMAGE_LIST" \
         --jobs="$JOBS" \
         --arch="$ARCH_LIST" \
         --os="$OS_LIST" \
@@ -97,7 +137,7 @@ cat >sync-k3s-to-aliyun.sh <<EOL
     hangar mirror validate \
         --source="$SOURCE_REGISTRY" \
         --destination="$DEST_REGISTRY" \
-        --file $IMAGE_LIST \
+        --file $GENERATED_GLOBAL_IMAGE_LIST \
         --arch="$ARCH_LIST" \
         --os="$OS_LIST" \
         --jobs=$JOBS \
@@ -137,6 +177,4 @@ cat >sync-k3s-to-aliyun.sh <<EOL
     fi
 EOL
 
-ls -l 
-
-docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3s-to-aliyun.sh 
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-rancher28-to-aliyun.sh 
