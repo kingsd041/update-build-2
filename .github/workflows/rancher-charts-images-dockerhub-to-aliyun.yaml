@@ -1,0 +1,26 @@
+name: rancher-charts-images-dockerhub-to-aliyun
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '1 */6 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run script
+        env:
+          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
+          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
+          TZ: 'Asia/Shanghai'
+        run: |
+          bash -x rancher-charts-images-dockerhub-to-aliyun.sh
