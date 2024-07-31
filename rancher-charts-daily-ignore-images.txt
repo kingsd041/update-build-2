@@ -1,0 +1,10 @@
+rancher/mirrored-cloud-provider-vsphere-csi-release-driver:latest
+rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:latest
+rancher/mirrored-sig-storage-csi-attacher:latest
+rancher/mirrored-sig-storage-csi-node-driver-registrar:latest
+rancher/mirrored-sig-storage-csi-provisioner:latest
+rancher/mirrored-sig-storage-csi-resizer:latest
+rancher/mirrored-sig-storage-livenessprobe:latest
+rancher/mirrored-longhornio-openshift-origin-oauth-proxy
+rancher/mirrored-sig-storage-csi-snapshotter
+rancher/mirrored-sig-storage-csi-snapshotter:latest
