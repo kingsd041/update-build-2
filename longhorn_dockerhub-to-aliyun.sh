@@ -23,7 +23,7 @@ jq -r .[].ref | \
 awk -F/ '{print $3}' | \
 grep v | \
 awk -Fv '{print $2}' | \
-grep -vE 'alpha|rc|beta' | \
+grep -vE 'alpha|rc|beta|de|pre' | \
 awk -F"." '{
   versions[$1"."$2][$3]++
 } END {
