@@ -1,4 +1,4 @@
-name: rancher-v29-latest-images-dockerhub-to-aliyun
+name: rancher-v210-latest-images-dockerhub-to-aliyun
 
 on:
   push:

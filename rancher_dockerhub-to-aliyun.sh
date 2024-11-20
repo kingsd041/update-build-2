@@ -21,7 +21,7 @@ export RETRY_REGISTRY="docker.io"
 # export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | grep -vE '^0.|^1.|^2.0|^2.1|^2.2|^2.3|^2.4|^2.5|^2.6'|awk -v num=3 -F"." 'BEGIN{i=1}{if(tmp==$1"."$2){i=i+1}else{tmp=$1"."$2;i=1};arr[$0]=i;arrMax[$1"."$2]=i}END{for(var in arr){split(var,arrTmp,".");if(arr[var]>=(arrMax[arrTmp[1]"."arrTmp[2]]-num)){print var}}}'|sort -r )
 
 # 每个主版本和次版本查询最新的一个小版本
-export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | grep -vE '^0.|^1.|^2.0|^2.1|^2.2|^2.3|^2.4|^2.5|^2.6' | sort -rV | awk -F. '!a[$1"."$2]++' )
+export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | grep -vE '^0.|^1.|^2.0|^2.1.[0-9]+$|^2.2|^2.3|^2.4|^2.5|^2.6' | sort -rV | awk -F. '!a[$1"."$2]++' )
 # 每个主版本和次版本查询最新的两个小版本
 # export RANCHER_VERSION=$( curl -L -s https://api.github.com/repos/rancher/rancher/git/refs/tags | jq -r .[].ref | awk -F/ '{print $3}' | grep v | awk -Fv '{print $2}' | grep -v [a-z] | grep -vE '^0.|^1.|^2.0|^2.1|^2.2|^2.3|^2.4|^2.5|^2.6' | sort -rV | awk -F. '{key=$1"."$2; count[key]++; if(count[key] <= 2) print $0}' )
 
