@@ -1,0 +1,26 @@
+name: rancher-v29-latest-images-dockerhub-to-aliyun
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '1 */24 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run script
+        env:
+          ALIYUN_ACC: ${{ secrets.ALIYUN_ACC }}
+          ALIYUN_PW: ${{ secrets.ALIYUN_PW }}
+          TZ: 'Asia/Shanghai'
+        run: |
+          bash -x rancher-v210-latest-images-dockerhub-to-aliyun.sh
