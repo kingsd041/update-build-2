@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -ex
 sudo apt-get install jq -y
 
 sudo bash -c "echo 'nameserver 223.5.5.5' > /etc/resolv.conf"
@@ -47,10 +47,9 @@ awk -F"." '{
   }
 }' | sort -r)
 
-
 for ver in $( echo "${longhorn_version}" );
 do
-    browser_download_url_list=$( curl -LSs https://api.github.com/repos/rancher/longhorn/releases/tags/v${ver} | jq ".assets[].browser_download_url" -r | grep txt )
+    browser_download_url_list=$( curl -L -u $token -s https://api.github.com/repos/longhorn/longhorn/releases/tags/v${ver} | jq ".assets[].browser_download_url" -r | grep txt )
     for browser_download_url in ${browser_download_url_list};
     do
         curl -u $token -LSs ${browser_download_url} | grep -v 'time=' >> rancher-images-all.txt;
