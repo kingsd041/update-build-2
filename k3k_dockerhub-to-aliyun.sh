@@ -77,68 +77,94 @@ echo ""
 # -------------------------------
 cat >sync-k3k-to-aliyun.sh <<EOL
 #!/bin/bash
+    # 添加调试信息
+    echo "Start mirror image list: $IMAGE_LIST"
+    echo "Source registry: $SOURCE_REGISTRY"
+    echo "Destination registry: $DEST_REGISTRY"
+    echo "Jobs: $JOBS"
+    echo "Arch list: $ARCH_LIST"
+    echo "OS list: $OS_LIST"
+    echo "Retry registry: $RETRY_REGISTRY"
 
-echo "Start mirror image list: $IMAGE_LIST"
+    echo "Start mirror image list: $IMAGE_LIST"
 
-hangar login ${DEST_REGISTRY} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
-
-hangar mirror \
-    --source="$SOURCE_REGISTRY" \
-    --destination="$DEST_REGISTRY" \
-    --file="$IMAGE_LIST" \
-    --jobs="$JOBS" \
-    --arch="$ARCH_LIST" \
-    --os="$OS_LIST" \
-    --timeout=60m \
-    --skip-login || true
-
-# retry logic
-if [[ -e "mirror-failed.txt" ]]; then
-    echo "Retrying failed images..."
-    cat mirror-failed.txt
-    mv mirror-failed.txt mirror-failed-1.txt
+    hangar login ${DEST_REGISTRY} --username ${ALIYUN_ACC} --password ${ALIYUN_PW}
 
     hangar mirror \
-        --source="$RETRY_REGISTRY" \
+        --source="$SOURCE_REGISTRY" \
         --destination="$DEST_REGISTRY" \
-        --file="mirror-failed-1.txt" \
+        --file="$IMAGE_LIST" \
+        --jobs="$JOBS" \
         --arch="$ARCH_LIST" \
         --os="$OS_LIST" \
-        --jobs=$JOBS \
+        --timeout=60m \
         --skip-login || true
-fi
 
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are some images failed to mirror:"
+        cat mirror-failed.txt
+        echo "-------------------------------"
+        mv mirror-failed.txt mirror-failed-1.txt
+        hangar mirror \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="./mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --skip-login || true
+    fi
 
-# validate
-if [[ -e "mirror-failed.txt" ]]; then
-    echo "Validate failed images:"
-    cat mirror-failed.txt
-    mv mirror-failed.txt mirror-failed-1.txt
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are still some images failed to mirror after retry:"
+        cat mirror-failed.txt
+        exit 1
+    fi
 
+    echo "-------------------------------"
     hangar mirror validate \
-        --source="$RETRY_REGISTRY" \
+        --source="$SOURCE_REGISTRY" \
         --destination="$DEST_REGISTRY" \
-        --file="mirror-failed-1.txt" \
+        --file $IMAGE_LIST \
         --arch="$ARCH_LIST" \
         --os="$OS_LIST" \
         --jobs=$JOBS \
         --skip-login || true
-fi
 
-if [[ -e "mirror-failed.txt" ]]; then
-    echo "Still failed:"
-    cat mirror-failed.txt
-    exit 1
-fi
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are some images failed to validate:"
+        cat mirror-failed.txt
+        echo "-------------------------------"
+        mv mirror-failed.txt mirror-failed-1.txt
+        echo "Re-mirror the validate failed images:"
+        hangar mirror \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --skip-login || true
+            
+        echo "-------------------------------"
+        echo "Re-validate the validate failed images:"
+        hangar mirror validate \
+            --source="$RETRY_REGISTRY" \
+            --destination="$DEST_REGISTRY" \
+            --file="mirror-failed-1.txt" \
+            --arch="$ARCH_LIST" \
+            --os="$OS_LIST" \
+            --jobs=$JOBS \
+            --skip-login || true
+    fi
+
+    if [[ -e "mirror-failed.txt" ]]; then
+        echo "There are still some images failed to validate after retry:"
+        cat mirror-failed.txt
+        exit 1
+    fi
 EOL
 
+ls -l 
 
-chmod +x sync-k3k-to-aliyun.sh
-ls -l
-
-echo ""
-echo "======================================================"
-echo " Start syncing images to Aliyun"
-echo "======================================================"
-
-docker run --rm -v \$(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3k-to-aliyun.sh
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-k3k-to-aliyun.sh 
