@@ -87,7 +87,7 @@ export images=$( cat $GENERATED_GLOBAL_VERSION_LIST | grep -vE 'Found|Not' )
 #'
 
 # 生成 hangar 同步的执行脚本
-cat >sync-rancher27-to-aliyun.sh <<EOL
+cat >sync-rancher-to-aliyun.sh <<EOL
 #!/bin/bash
     # 添加调试信息
     echo "Start mirror image list: $GENERATED_GLOBAL_IMAGE_LIST"
@@ -177,4 +177,4 @@ cat >sync-rancher27-to-aliyun.sh <<EOL
     fi
 EOL
 
-docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-rancher27-to-aliyun.sh 
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-rancher-to-aliyun.sh 

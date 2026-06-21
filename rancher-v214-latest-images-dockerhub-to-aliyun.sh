@@ -22,14 +22,14 @@ export ARCH_LIST="amd64,arm64"
 export OS_LIST="linux,windows"
 export RETRY_REGISTRY="docker.io"
 
-# v2.11-global-kdm-data.json: Global KDM data.json
-export CATTLE_KDM_BRANCH="release-v2.11"
-export RANCHER_MAJOR_MINOR_VERSION="2.11"
+# v2.14-global-kdm-data.json: Global KDM data.json
+export CATTLE_KDM_BRANCH="release-v2.14"
+export RANCHER_MAJOR_MINOR_VERSION="2.14"
 
 GLOBAL_KDM_FILENAME="${RANCHER_MAJOR_MINOR_VERSION}-global-kdm-data.json"
 
 
-# v2.11-global-versions.txt: Global KDM 版本列表
+# v2.14-global-versions.txt: Global KDM 版本列表
 GENERATED_GLOBAL_VERSION_LIST="$RANCHER_MAJOR_MINOR_VERSION-global-versions.txt"
 
 # GLOBAL KDM all images
@@ -157,7 +157,7 @@ cat >sync-rancher-to-aliyun.sh <<EOL
             --os="$OS_LIST" \
             --jobs=$JOBS \
             --skip-login || true
-            
+
         echo "-------------------------------"
         echo "Re-validate the validate failed images:"
         hangar mirror validate \
@@ -177,4 +177,4 @@ cat >sync-rancher-to-aliyun.sh <<EOL
     fi
 EOL
 
-docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-rancher-to-aliyun.sh 
+docker run --rm -v $(pwd):/hangar --network=host cnrancher/hangar:latest bash sync-rancher-to-aliyun.sh
