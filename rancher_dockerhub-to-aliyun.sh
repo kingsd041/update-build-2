@@ -97,6 +97,7 @@ cat >sync-rancher-to-aliyun.sh <<EOL
         --arch="$ARCH_LIST" \
         --os="$OS_LIST" \
         --timeout=120m \
+        --provenance=false \
         --skip-login || true
 
     if [[ -e "mirror-failed.txt" ]]; then
@@ -111,6 +112,7 @@ cat >sync-rancher-to-aliyun.sh <<EOL
             --arch="$ARCH_LIST" \
             --os="$OS_LIST" \
             --jobs=$JOBS \
+            --provenance=false \
             --skip-login || true
     fi
 
@@ -128,6 +130,7 @@ cat >sync-rancher-to-aliyun.sh <<EOL
         --arch="$ARCH_LIST" \
         --os="$OS_LIST" \
         --jobs=$JOBS \
+        --provenance=false \
         --skip-login || true
 
     if [[ -e "mirror-failed.txt" ]]; then
@@ -143,6 +146,7 @@ cat >sync-rancher-to-aliyun.sh <<EOL
             --arch="$ARCH_LIST" \
             --os="$OS_LIST" \
             --jobs=$JOBS \
+            --provenance=false \
             --skip-login || true
             
         echo "-------------------------------"
@@ -154,6 +158,7 @@ cat >sync-rancher-to-aliyun.sh <<EOL
             --arch="$ARCH_LIST" \
             --os="$OS_LIST" \
             --jobs=$JOBS \
+            --provenance=false \
             --skip-login || true
     fi
 
